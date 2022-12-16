@@ -8,7 +8,7 @@ rank = comm.Get_rank()
 new_comm = None
 new_rank = None
 
-#les differents range des ranks
+# les differents range des ranks
 capteurs = range(0, 4)
 collecteurs = range(4, 7)
 controleur = [7]
@@ -30,31 +30,33 @@ preRequis : les collecteurs demandent aux capteurs de leur envoyer des données
 obj : envoye des valeur entre les 4 processus de capteur aux trois aux processus de collecteur
 
 """
-    
-    
-#demande aux capteur de leur envoyer une donnée
-def testAskData():
-    for i in range(4,7):
-        for j in range(0,4):
-            comm.send("ask data", dest=j)
-        
 
-#recoit les données des capteurs et envoi la donne
+
+# demande aux capteur de leur envoyer une donnée
+def testAskData():
+    for i in range(4, 7):
+        for j in range(0, 4):
+            comm.send("ask data", dest=j)
+
+
+# recoit les données des capteurs et envoi la donne
 def ResponseAskData():
-    for i in range(0,4):
-        for j in range(4,7):
+    for i in range(0, 4):
+        for j in range(4, 7):
             data = comm.recv(source=j)
             print(data)
             if data == "ask data":
                 comm.send("data sended from capteur rank : " + j, dest=j)
 
-# collecteur print les datas recu par les capteurs        
+
+# collecteur print les datas recu par les capteurs
 def PrintReceiveFinalData():
-    for i in range(4,7):
-        for j in range(0,4):
+    for i in range(4, 7):
+        for j in range(0, 4):
             data = comm.recv(source=j)
             print(data)
-    
+
+
 """
 def testSendData(data):
     #rank between 0 and 3 send data to rank 4, 5 and 6
@@ -72,10 +74,10 @@ def testRecvData():
 
 """
 
+
 def capteur():
     print("I am a capteur")
     communication = ""
-    comm.Recv(communication, source=collecteurs)
 
 
 def collecteur():
