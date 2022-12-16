@@ -8,6 +8,7 @@ rank = comm.Get_rank()
 new_comm = None
 new_rank = None
 
+#les differents range des ranks
 capteurs = range(0, 4)
 collecteurs = range(4, 7)
 controleur = [7]
@@ -21,9 +22,27 @@ if comm.Get_size() != nb_process:
         print(f"Utilisation : mpiexec -n {nb_process} py ./main.py")
     exit(1)
 
+"""
+capteur = 4
+collecteur = 3
 
-def managerPrincipal():
-    print("I am the main manager")
+obj : envoye des valeur entre les 4 processus de capteur aux trois aux processus de collecteur
+
+"""
+    
+def testSendData(data):
+    #rank between 0 and 3 send data to rank 4, 5 and 6
+    for i in range(0, 4):
+        for j in range(4, 7):
+            comm.send(data, dest=j)
+        
+    
+
+def testRecvData():
+    for i in range (4,7):
+        for j in range(0,4):
+            data = comm.recv(source=j)
+            print(data)
 
 
 def capteur():
