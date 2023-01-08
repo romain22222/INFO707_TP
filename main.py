@@ -1,3 +1,4 @@
+import keyboard
 from mpi4py import MPI
 
 # To launch : mpiexec -n <nb_process> py ./main.py
@@ -14,8 +15,9 @@ collecteurs = range(4, 7)
 controleur = [7]
 horloge = [8]
 bdc = [9]
+console = [10]
 
-nb_process = len(capteurs) + len(collecteurs) + len(controleur) + len(horloge) + len(bdc)
+nb_process = len(capteurs) + len(collecteurs) + len(controleur) + len(horloge) + len(bdc) + len(console)
 if comm.Get_size() != nb_process:
     if rank == 0:
         print("Erreur : pas le bon nombre de processus")
@@ -32,56 +34,23 @@ obj : envoye des valeur entre les 4 processus de capteur aux trois aux processus
 """
 
 
-# demande aux capteur de leur envoyer une donnée
-def testAskData():
-    for i in range(4, 7):
-        for j in range(0, 4):
-            comm.send("ask data", dest=j)
-
-
-# recoit les données des capteurs et envoi la donne
-def ResponseAskData():
-    for i in range(0, 4):
-        for j in range(4, 7):
-            data = comm.recv(source=j)
-            print(data)
-            if data == "ask data":
-                comm.send("data sended from capteur rank : " + j, dest=j)
-
-
-# collecteur print les datas recu par les capteurs
-def PrintReceiveFinalData():
-    for i in range(4, 7):
-        for j in range(0, 4):
-            data = comm.recv(source=j)
-            print(data)
-
-
-"""
-def testSendData(data):
-    #rank between 0 and 3 send data to rank 4, 5 and 6
-    for i in range(0, 4):
-        for j in range(4, 7):
-            comm.send(data, dest=j)
-        
-    
-
-def testRecvData():
-    for i in range (4,7):
-        for j in range(0,4):
-            data = comm.recv(source=j)
-            print(data)
-
-"""
-
-
 def capteur():
     print("I am a capteur")
-    communication = ""
+    while 1:
+        value = comm.recv(tag=rank)
+        print(value)
+        comm.send(str(20), dest=int(str(value).split("ask data ")[1]),
+                  tag=int(str(value).split("ask data ")[1]))
 
 
 def collecteur():
     print("I am a collecteur")
+    while 1:
+        for j in capteurs:
+            comm.send("ask data " + str(rank), dest=j, tag=j)
+        for j in capteurs:
+            data = comm.recv(source=j)
+            print(str(j) + data)
 
 
 def controlleur():
@@ -96,16 +65,20 @@ def barredc():
     print("I am a barre de controle")
 
 
+def upTemp():
+    # est censé augmenter de 1 la température
+    return
+
+
+def cons():
+    print("I am the console")
+    while True:
+        if keyboard.read_key() == "p":
+            print("coucou")
+            upTemp()
+
+
 def main():
-    color = 0 if rank in capteurs else 99
-    color = 1 if rank in collecteurs else color
-    color = 2 if rank in controleur else color
-    color = 3 if rank in horloge else color
-    color = 4 if rank in bdc else color
-    new_comm = comm.Split(color, rank)
-    new_comm.Set_name(str(color))
-    new_rank = new_comm.Get_rank()
-    print(new_comm.Get_name(), new_rank)
     if rank in capteurs:
         capteur()
     elif rank in collecteurs:
@@ -116,6 +89,8 @@ def main():
         h()
     elif rank in bdc:
         barredc()
+    elif rank in console:
+        cons()
     else:
         print("I am process {}".format(rank))
 
