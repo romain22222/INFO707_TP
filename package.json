@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "find-process": "^1.4.7",
-    "ps-node": "^0.1.6"
-  }
-}
