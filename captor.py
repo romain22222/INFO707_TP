@@ -24,9 +24,19 @@ def captor_loop(captor_id):
     def on_connect(_, userdata, flags, rc):
         print(f"Collector {captor_id} connected with result code {str(rc)}")
 
-    def on_message(client, userdata, msg):
-        if random.random() < 0.001:
-            client.publish("collectorChan" + msg.payload.decode(), str(20))
+    def on_message(clientMsg, userdata, msg):
+        global actual_temperature, proba_success, proba_on_remaining_state_wrong_value
+        if msg.topic == captors_topic:
+            if random.random() < proba_success:
+                clientMsg.publish("collectorChan" + msg.payload.decode(), captor_id + "|" + str(actual_temperature))
+            elif random.random() < proba_on_remaining_state_wrong_value:
+                clientMsg.publish("collectorChan" + msg.payload.decode(), captor_id + "|" + str(actual_temperature))
+        elif msg.topic == editTemp:
+            actual_temperature = int(msg.payload.decode())
+        elif msg.topic == editPS:
+            proba_success = float(msg.payload.decode())
+        elif msg.topic == editPF:
+            proba_on_remaining_state_wrong_value = float(msg.payload.decode())
 
     client.on_connect = on_connect
     client.on_message = on_message
