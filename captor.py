@@ -21,10 +21,10 @@ def captor_loop(captor_id):
     client.connect(broker_address)
     client.subscribe(captors_topic)
 
-    def on_connect(_, userdata, flags, rc):
+    def on_connect(_, _userdata, _flags, rc):
         print(f"Collector {captor_id} connected with result code {str(rc)}")
 
-    def on_message(clientMsg, userdata, msg):
+    def on_message(clientMsg, _userdata, msg):
         global actual_temperature, proba_success, proba_on_remaining_state_wrong_value
         if msg.topic == captors_topic:
             if random.random() < proba_success:
@@ -43,6 +43,6 @@ def captor_loop(captor_id):
     client.loop_forever()
 
 
-for captor_id in range(1, captor_count + 1):
-    captor_process = Process(target=captor_loop, args=(str(captor_id),))
+for cid in range(1, captor_count + 1):
+    captor_process = Process(target=captor_loop, args=(str(cid),))
     captor_process.start()

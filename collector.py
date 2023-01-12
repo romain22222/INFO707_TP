@@ -26,17 +26,17 @@ def collector_loop(collector_id):
     client.subscribe(collectorChanGeneral + collector_id)
     intCollectorId = int(collector_id)
 
-    def on_connect(client, userdata, flags, rc):
+    def on_connect(_, _userdata, _flags, rc):
         print(f"Collector {collector_id} connected with result code {str(rc)}")
 
-    def on_message(client, userdata, msg):
+    def on_message(clientmsg, _, msg):
         if msg.topic == delta_1:
             tabCheckReceived[intCollectorId] = [False] * captor_count
             vals[intCollectorId] = [0] * captor_count
             # print(f"Collector {collector_id} received tick")
             for captor_id in range(1, captor_count + 1):
-                client.publish(captor_topic, collector_id)
-            client.subscribe(delta_2)
+                clientmsg.publish(captor_topic, collector_id)
+            clientmsg.subscribe(delta_2)
         elif msg.topic == collectorChanGeneral + collector_id:
             data = msg.payload.decode().split('|')
             captor = int(data[0])
@@ -46,18 +46,20 @@ def collector_loop(collector_id):
             # print(f"Collector {collector_id} recoit la donnée du capteur {captor} : {valeur}")
         elif msg.topic == delta_2:
             if gotDelta2[intCollectorId]:
-                client.unsubscribe(delta_2)
+                clientmsg.unsubscribe(delta_2)
                 gotDelta2[intCollectorId] = False
                 valsSet = set(vals[intCollectorId])
-                if len([v for v in tabCheckReceived[intCollectorId] if v]) < captor_count-1:
-                    client.publish(outCollector, collector_id + "|DEFAILLANCE CAPTEUR")
+                if len([v for v in tabCheckReceived[intCollectorId] if v]) < captor_count - 1:
+                    clientmsg.publish(outCollector, collector_id + "|DEFAILLANCE CAPTEUR")
                 elif any(vals[intCollectorId].count(list(valsSet)[i]) >= 3 for i in range(len(valsSet))):
                     # Valeur fiable pour sur
-                    vToCheck = vals[intCollectorId][[i for i in range(len(valsSet)) if vals[intCollectorId].count(list(valsSet)[i]) >= 3][0]]
-                    client.publish(outCollector, collector_id + ("|ALARME TEMPERATURE" if vToCheck < seuil else "|TEMPERATURE NORMALE"))
+                    vToCheck = vals[intCollectorId][
+                        [i for i in range(len(valsSet)) if vals[intCollectorId].count(list(valsSet)[i]) >= 3][0]]
+                    clientmsg.publish(outCollector, collector_id + (
+                        "|ALARME TEMPERATURE" if vToCheck < seuil else "|TEMPERATURE NORMALE"))
                 else:
                     # Choke pas de valeur fiable
-                    client.publish(outCollector, collector_id + "|DEFAILLANCE CAPTEUR")
+                    clientmsg.publish(outCollector, collector_id + "|DEFAILLANCE CAPTEUR")
             else:
                 gotDelta2[intCollectorId] = True
 
@@ -66,6 +68,6 @@ def collector_loop(collector_id):
     client.loop_forever()
 
 
-for collector_id in range(collector_count):
-    collector_process = Process(target=collector_loop, args=(str(collector_id),))
+for cid in range(collector_count):
+    collector_process = Process(target=collector_loop, args=(str(cid),))
     collector_process.start()

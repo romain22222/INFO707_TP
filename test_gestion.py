@@ -19,7 +19,7 @@ def gestion_loop():
     client = mqtt.Client()
     client.connect(broker_address)
 
-    def on_connect(client, userdata, flags, rc):
+    def on_connect(_, _userdata, _flags, rc):
         print(f"Gestion connected with result code {str(rc)}")
 
     client.on_connect = on_connect

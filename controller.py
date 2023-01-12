@@ -13,16 +13,17 @@ barre = False
 diagnosReceived = [0 for i in range(collector_count)]
 possiblesDiagnos = ["TEMPERATURE NORMALE", "DEFAILLANCE CAPTEUR", "ALARME TEMPERATURE"]
 
+
 def controller_loop():
     client = mqtt.Client()
     client.connect(broker_address)
     client.subscribe(topic)
     client.subscribe(outCollector)
 
-    def on_connect(client, userdata, flags, rc):
+    def on_connect(_, _userdata, _flags, rc):
         print(f"Controller connected with result code {str(rc)}")
 
-    def on_message(client, userdata, msg):
+    def on_message(_, _userdata, msg):
         global voyant, barre, diagnosReceived
         if msg.topic == topic:
             # Analyse les états actuels

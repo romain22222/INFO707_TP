@@ -12,11 +12,11 @@ pause = "pause"
 isPaused = False
 
 
-def on_connect(client, userdata, flags, rc):
+def on_connect(_, _userdata, _flags, rc):
     print("Connected with result code " + str(rc))
 
 
-def on_message(client, userdata, msg):
+def on_message(_, _userdata, msg):
     global isPaused
     if msg.topic == pause:
         isPaused = not isPaused
