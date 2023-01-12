@@ -17,14 +17,16 @@ def captor_loop(captor_id):
         print(f"Collector {captor_id} connected with result code {str(rc)}")
 
     def on_message(client, userdata, msg):
-        if random.random() < 0.001:
-            client.publish("collectorChan" + msg.payload.decode(), str(20))
+        if random.random() > 0.1:
+            client.publish("collectorChan" + msg.payload.decode(), captor_id + "|" + str(40))
+        elif random.random() > 0.5:
+            client.publish("collectorChan" + msg.payload.decode(), captor_id + "|" + str(20))
 
     client.on_connect = on_connect
     client.on_message = on_message
     client.loop_forever()
 
 
-for captor_id in range(1, captor_count + 1):
+for captor_id in range(captor_count):
     captor_process = Process(target=captor_loop, args=(str(captor_id),))
     captor_process.start()
