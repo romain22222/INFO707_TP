@@ -20,6 +20,9 @@ def captor_loop(captor_id):
     client = mqtt.Client()
     client.connect(broker_address)
     client.subscribe(captors_topic)
+    client.subscribe(editPS)
+    client.subscribe(editPF)
+    client.subscribe(editTemp)
 
     def on_connect(_, _userdata, _flags, rc):
         print(f"Collector {captor_id} connected with result code {str(rc)}")
@@ -43,6 +46,6 @@ def captor_loop(captor_id):
     client.loop_forever()
 
 
-for cid in range(1, captor_count + 1):
+for cid in range(captor_count):
     captor_process = Process(target=captor_loop, args=(str(cid),))
     captor_process.start()
